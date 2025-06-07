@@ -227,126 +227,74 @@ class ExpenseTransformer:
         return "Outro"
 
     def _categorize_funds(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Categoriza os fundos com base no mapeamento FIDC-FIC.
-        Distribui as linhas entre o FIDC original e seus FICs sem duplicação.
+        """Agrupa despesas de FICs no respectivo FIDC.
+
+        Para cada linha cujo ``nome_fundo`` corresponda a um FIC mapeado, o
+        ``nmfundo`` passa a ser o nome do FIDC investidor e ``nmcategorizado``
+        recebe o nome original do FIC. O tipo do fundo (``TpFundo``) é
+        recalculado para refletir o tipo do FIC.
         """
         if 'nome_fundo' not in df.columns:
             logger.warning("Coluna 'nome_fundo' não encontrada no DataFrame")
             return df
-        
-        # Cria cópia para evitar SettingWithCopyWarning
+
         df = df.copy()
-        
-        # Carregamos o mapeamento FIC-FIDC
+
         fidc_to_fics, fic_to_fidc = self.config_loader.load_fic_fidc_mapping()
-        
-        # LOGS INICIAIS
-        logger.info(f"Processando {len(df)} linhas, {df['nome_fundo'].nunique()} fundos únicos")
-        logger.info(f"Fundos encontrados: {', '.join(df['nome_fundo'].unique()[:5])}" + 
-                (f" e mais {df['nome_fundo'].nunique() - 5} outros..." if df['nome_fundo'].nunique() > 5 else ""))
-        
-        # Normalizar nomes para lidar com acentos/variações
+
+        # Preparação para correspondências sem acentuação
         import unicodedata
-        
-        def normalize_string(s):
+
+        def normalize_string(s: str) -> str:
             if not isinstance(s, str):
                 return str(s)
             s = s.strip().upper()
-            # Remover acentos
             s = unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore').decode('ASCII')
             return s
-        
-        # Criar versões normalizadas dos mapeamentos para buscas
-        normalized_fidc_to_fics = {}
-        for fidc, fics in fidc_to_fics.items():
-            normalized_fidc_to_fics[normalize_string(fidc)] = fics
-        
-        # Inicialmente, nmcategorizado = nome_fundo (para casos sem mapeamento)
-        df['nmcategorizado'] = df['nome_fundo']
-        
-        # Processar cada fundo que é um FIDC
-        for fidc_name, fics_list in fidc_to_fics.items():
-            if not fics_list or fics_list[0] == "-":  # Ignora FICs marcados como "-"
-                continue
-                
-            # Encontrar todas as linhas deste FIDC
-            fidc_mask = df['nome_fundo'].apply(lambda x: normalize_string(fidc_name) in normalize_string(x) or 
-                                                normalize_string(x) in normalize_string(fidc_name))
-            
-            fidc_rows = df[fidc_mask]
-            if len(fidc_rows) == 0:
-                continue
-                
-            logger.debug(f"Encontradas {len(fidc_rows)} linhas para o FIDC: {fidc_name}")
-            
-            # Número de linhas a distribuir para cada FIC
-            total_rows = len(fidc_rows)
-            num_fics = len(fics_list)
-            
-            # Garantir que pelo menos 50% das linhas permaneçam com o FIDC original
-            keep_original_count = max(int(total_rows * 0.5), 1)
-            rows_to_distribute = total_rows - keep_original_count
-            
-            # Se não houver linhas suficientes para distribuir, continuar
-            if rows_to_distribute <= 0:
-                continue
-                
-            # Distribuir as linhas restantes entre os FICs
-            rows_per_fic = max(1, rows_to_distribute // num_fics)
-            
-            # Obter todos os índices das linhas do FIDC
-            fidc_indices = fidc_rows.index.tolist()
-            
-            # Manter alguns índices com o FIDC original e distribuir os demais
-            import random
-            random.seed(42)  # Para consistência
-            
-            # Shuffle índices para distribuição aleatória mas consistente
-            random.shuffle(fidc_indices)
-            
-            # Índices a manter com o FIDC original
-            keep_indices = fidc_indices[:keep_original_count]
-            
-            # Índices a distribuir entre os FICs
-            distribute_indices = fidc_indices[keep_original_count:]
-            
-            # Distribuir entre os FICs
-            for i, fic in enumerate(fics_list):
-                start_idx = i * rows_per_fic
-                end_idx = min((i + 1) * rows_per_fic, len(distribute_indices))
-                
-                if start_idx >= len(distribute_indices):
-                    break
-                    
-                fic_indices = distribute_indices[start_idx:end_idx]
-                
-                if not fic_indices:
-                    continue
-                    
-                # Atribuir o FIC como nmcategorizado para estas linhas
-                df.loc[fic_indices, 'nmcategorizado'] = fic
-                
-                # Determina o tipo correto para o FIC
-                fic_type = self._determine_fic_type(fic)
-                df.loc[fic_indices, 'TpFundo'] = fic_type
-                
-                logger.debug(f"Atribuído {len(fic_indices)} linhas ao FIC {fic} com tipo {fic_type}")
-        
-        # LOGS FINAIS
-        categorized_count = (df['nome_fundo'] != df['nmcategorizado']).sum()
+
+        # Dicionário de busca usando nomes normalizados do FIC
+        normalized_fic_map = {
+            normalize_string(fic): (fic, fidc)
+            for fic, fidc in fic_to_fidc.items()
+        }
+
+        # Garantir colunas esperadas
+        if 'nmfundo' not in df.columns:
+            df['nmfundo'] = df['nome_fundo']
+        if 'nmcategorizado' not in df.columns:
+            df['nmcategorizado'] = df['nome_fundo']
+
+        for idx, row in df.iterrows():
+            norm_name = normalize_string(row['nome_fundo'])
+
+            fidc_name = None
+            fic_key = None
+
+            # Verificação direta e parcial
+            if norm_name in normalized_fic_map:
+                fic_key, fidc_name = normalized_fic_map[norm_name]
+            else:
+                for fic_norm, (fic_orig, fidc_orig) in normalized_fic_map.items():
+                    if fic_norm in norm_name or norm_name in fic_norm:
+                        fic_key, fidc_name = fic_orig, fidc_orig
+                        break
+
+            if fidc_name:
+                df.at[idx, 'nmfundo'] = fidc_name
+                df.at[idx, 'nmcategorizado'] = row['nome_fundo']
+                df.at[idx, 'TpFundo'] = self._determine_fic_type(row['nome_fundo'])
+
+        categorized_count = (df['nmfundo'] != df['nome_fundo']).sum()
         logger.info(f"Fundos categorizados: {categorized_count} mapeamentos aplicados")
-        
+
         if categorized_count > 0:
-            # Mostrar estatísticas de categorização
-            logger.info(f"Distribuição de nmcategorizado: {df['nmcategorizado'].value_counts().head(10).to_dict()}")
-            logger.info(f"Distribuição de TpFundo: {df['TpFundo'].value_counts().to_dict()}")
-            
-            # Mostrar exemplos de mapeamentos realizados
-            sample_map = df[df['nome_fundo'] != df['nmcategorizado']].head(5)
-            for _, row in sample_map.iterrows():
-                logger.debug(f"Exemplo de mapeamento: {row['nome_fundo']} -> {row['nmcategorizado']} (TpFundo: {row['TpFundo']})")
-        
+            logger.info(
+                f"Distribuição de nmcategorizado: {df['nmcategorizado'].value_counts().head(10).to_dict()}"
+            )
+            logger.info(
+                f"Distribuição de TpFundo: {df['TpFundo'].value_counts().to_dict()}"
+            )
+
         return df
 
     def _determine_fic_type(self, fic_name: str) -> str:
