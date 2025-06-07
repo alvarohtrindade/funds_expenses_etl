@@ -1,0 +1,11 @@
+# Ignorar virtualenv
+venv/
+
+# Ignorar todos os arquivos da pasta data
+data/**
+
+# Ignorar arquivos temporários ou gerados
+*.log
+*.csv
+*.xls
+*.xlsx

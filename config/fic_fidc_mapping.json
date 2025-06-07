@@ -1,0 +1,228 @@
+{
+  "fidc_to_fics": {
+    "IPÊ": [
+      "AROEIRA FIC FIM",
+      "SECULO FIC FIM"
+    ],
+    "FIDC AGROCETE": [
+      "FIGUEIREDO FIC FIM"
+    ],
+    "CREDILOG II": [
+      "BAUNKER II FIC FIM"
+    ],
+    "BONTEMPO": [
+      "RINCAO"
+    ],
+    "3RD": [
+      "ARABAN FIC FIM"
+    ],
+    "GREENWOOD": [
+      "GPW INVESTIMENTOS FIC FIM"
+    ],
+    "UKF": [
+      "UKF"
+    ],
+    "3GBANK": [
+      "CAMPOS GERAIS FIC FIM"
+    ],
+    "VELSO": [
+      "FIC GMOT"
+    ],
+    "RECEBA SEGURO": [
+      "IRIS"
+    ],
+    "UNITY": [
+      "AXXIA INVESTIMENTO FIC FIM"
+    ],
+    "SDL": [
+      "ABX9 FIM"
+    ],
+    "CAPITALIZA": [
+      "CAP4 FIC FIM",
+      "CAP6 FIC FIM"
+    ],
+    "FUTURO CAPITAL": [
+      "PETKOW CAPITAL FIC FIM"
+    ],
+    "BLUE ROCKET": [
+      "GO TOGETHER"
+    ],
+    "Z INVEST": [
+      "Z CORP"
+    ],
+    "MF GROUP FIDC": [
+      "MF HOLDING GROUP FIC FIM"
+    ],
+    "CREDIAL BANK PAN": [
+      "PAN FIC FIM"
+    ],
+    "AF6": [
+      "AF"
+    ],
+    "PINPAG": [
+      "PINPAG"
+    ],
+    "LOGFIN FIDC": [
+      "CATALISE FIC FIDC - RL"
+    ],
+    "ANIL": [
+      "LC AZUL FIC FIM"
+    ],
+    "DBANK": [
+      "ADCBANK FIC FIM"
+    ],
+    "RHB": [
+      "RHB FIC FIM"
+    ],
+    "KÉRDOS": [
+      "OIKOS FIC FIM"
+    ],
+    "BRAVOS": [
+      "ÁTICO"
+    ],
+    "SMT AGRO": [
+      "SMT AGRO HOLDING"
+    ],
+    "BEFIC": [
+      "BELLIN FIC FIM"
+    ],
+    "ANVERES": [
+      "ANTARES FIC FIM"
+    ],
+    "VISHNU": [
+      "GANESHA"
+    ],
+    "NR11": [
+      "E11EVEN"
+    ],
+    "MASTRENN": [
+      "MASTRENN"
+    ],
+    "ALBAREDO": [
+      "VEDELAGO"
+    ],
+    "PÉROLA": [
+      "BELLAGIO"
+    ],
+    "B5": [
+      "B5"
+    ],
+    "PAY CARGO": [
+      "CARGO HOLD FIC FIM"
+    ],
+    "VITTRA": [
+      "FBH FIC FIM"
+    ],
+    "TERTON": [
+      "MACANAN"
+    ],
+    "BASÃ": [
+      "ABIATAR"
+    ],
+    "GLOBAL FUTURA": [
+      "NOVA GLOBAL"
+    ],
+    "ZAB LEGACY": [
+      "MENEGOTTI"
+    ],
+    "VALENTE": [
+      "ATLANTICO"
+    ],
+    "BELL": [
+      "AVANTI FINTECH"
+    ],
+    "PRIME AGRO": [
+      "GRUPO PRIME AGRO"
+    ],
+    "SAGEL": [
+      "SAGEL FIC FIM"
+    ],
+    "SC": [
+      "SCI"
+    ],
+    "NINE CAPITAL": [
+      "NINE CAPITAL"
+    ],
+    "VERGINIA": [
+      "GRUPO CORES"
+    ],
+    "PROMETHEUS": [
+      "MAUI"
+    ],
+    "FINTRUST": [
+      "STAND BY"
+    ],
+    "ÁGIS (OVERMIND)": [
+      "GOLIATH FIM IE",
+      "ARTANIS FIM IE",
+      "ARCTURUS FIM IE"
+    ],
+    "FERPAR": [
+      "GLOBAL FIC FIM"
+    ],
+    "F2 BANK": [
+      "FFBANK FC FIM"
+    ],
+    "P2 INVEST": [
+      "FBJ77"
+    ]
+  },
+  "fic_to_fidc": {
+    "AROEIRA FIC FIM CP": "IPÊ",
+    "SECULO FIC FIM CP": "IPÊ",
+    "FIGUEIREDO FIC FIM": "FIDC AGROCETE",
+    "BAUNKER II FIC FIM CP": "CREDILOG II",
+    "RINCAO": "BONTEMPO",
+    "ARABAN FIC FIM CP": "3RD",
+    "GPW INVESTIMENTOS FIC FIM CP": "GREENWOOD",
+    "UKF": "UKF",
+    "CAMPOS GERAIS FIC FIM CP": "3GBANK",
+    "FIC GMOT": "VELSO",
+    "IRIS": "RECEBA SEGURO",
+    "AXXIA INVESTIMENTO FIC FIM CP": "UNITY",
+    "ABX9 FIM CP": "SDL",
+    "CAP4 FIC FIM CP": "CAPITALIZA",
+    "CAP6 FIC FIM CP": "CAPITALIZA",
+    "PETKOW CAPITAL FIC FIM CP": "FUTURO CAPITAL",
+    "GO TOGETHER": "BLUE ROCKET",
+    "Z CORP": "Z INVEST",
+    "MF HOLDING GROUP FIC FIM": "MF GROUP FIDC",
+    "PAN FIC FIM": "CREDIAL BANK PAN",
+    "AF": "AF6",
+    "CATALISE FIC FIDC - RL": "LOGFIN FIDC",
+    "LC AZUL FIC FIM": "ANIL",
+    "ADCBANK FIC FIM": "DBANK",
+    "RHB FIC FIM": "RHB",
+    "OIKOS FIC FIM CP": "KÉRDOS",
+    "SMT AGRO HOLDING": "SMT AGRO",
+    "BELLIN FIC FIM": "BEFIC",
+    "ANTARES FIC FIM": "ANVERES",
+    "GANESHA": "VISHNU",
+    "E11EVEN": "NR11",
+    "MASTRENN": "MASTRENN",
+    "VEDELAGO": "ALBAREDO",
+    "BELLAGIO": "PÉROLA",
+    "B5": "B5",
+    "CARGO HOLD FIC FIM CP": "PAY CARGO",
+    "FBH FIC FIM": "VITTRA",
+    "MACANAN": "TERTON",
+    "ABIATAR": "BASÃ",
+    "NOVA GLOBAL": "GLOBAL FUTURA",
+    "MENEGOTTI": "ZAB LEGACY",
+    "ATLANTICO": "VALENTE",
+    "AVANTI FINTECH": "BELL",
+    "GRUPO PRIME AGRO": "PRIME AGRO",
+    "SAGEL FIC FIM": "SAGEL",
+    "SCI": "SC",
+    "NINE CAPITAL": "NINE CAPITAL",
+    "GRUPO CORES": "VERGINIA",
+    "MAUI": "PROMETHEUS",
+    "STAND BY": "FINTRUST",
+    "GOLIATH FIM CP IE": "ÁGIS (OVERMIND)",
+    "ARTANIS FIM CP IE": "ÁGIS (OVERMIND)",
+    "ARCTURUS FIM CP IE": "ÁGIS (OVERMIND)",
+    "GLOBAL FIC FIM CP": "FERPAR",
+    "FFBANK FC FIM CP": "F2 BANK",
+    "FBJ77": "P2 INVEST"
+  }
+}

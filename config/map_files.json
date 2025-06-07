@@ -1,0 +1,382 @@
+{
+  "custodiantes": {
+    "BTG": {
+      "file_type": "xlsx",
+      "skip_rows": 1,
+      "columns": {
+        "Nome da classe": {"name": "nome_classe", "type": "str", "required": true},
+        "Conta da classe": {"name": "conta_classe", "type": "str", "required": false},
+        "Estrutura do fundo": {"name": "estrutura_fundo", "type": "str", "required": false},
+        "CNPJ da classe": {"name": "cnpj_classe", "type": "str", "required": false},
+        "Código CVM": {"name": "codigo_cvm", "type": "str", "required": false},
+        "Data": {"name": "data", "type": "date", "format": "%d/%m/%Y", "required": true},
+        "Lançamento": {"name": "lancamento", "type": "str", "required": true},
+        "Financeiro (R$)": {"name": "valor_financeiro", "type": "float", "replace": {"R$ ": "", ",": "."}, "required": true},
+        "Saldo (R$)": {"name": "saldo", "type": "float", "replace": {"R$ ": "", ",": "."}, "required": false},
+        "Remetente": {"name": "remetente", "type": "str", "required": false},
+        "Observação": {"name": "observacao", "type": "str", "required": false}
+      },
+      "validations": {
+        "drop_if_empty": ["data", "lancamento", "valor_financeiro"],
+        "filter_out_lancamentos": ["Saldo inicial", "Saldo final"]
+      },
+      "output_mapping": {
+        "DtReferencia": {"source": "data", "format": "%Y-%m-%d 00:00:00"},
+        "Ano": {"source": "data", "extract": "year"},
+        "Mês": {"source": "data", "extract": "month_name_pt"},
+        "TpFundo": {"source": "estrutura_fundo", "default": "FIDC", "force_default": true},
+        "NmFundo": {"source": "nome_classe", "extract": "clean_name"},
+        "NmCategorizado": {"source": "nome_classe", "extract": "clean_name"},
+        "Lançamento": {"source": "lancamento", "extract": "categorize_lancamento_avancado"},
+        "Valor": {"source": "valor_financeiro", "extract": "abs"},
+        "COD": {"source": "remetente", "default": ""}
+      },
+      "categorization_rules": {
+        "lancamento": {
+          "REF A RESGATE": "Resgate",
+          "REF A AQUISICAO": "Aquisição",
+          "RECOLH. TAXA": "Taxa",
+          "DEPÓSITO": "Aporte",
+          "PAGAMENTO": "Pagamento",
+          "SALDO INICIAL": "Saldo inicial",
+          "SALDO FINAL": "Saldo final",
+          "DEPÓSITO EM C/C VIA RESERVA": "Aporte",
+          "TAXA": "Taxa",
+          "TARIFA": "Tarifa Bancária",
+          "AUDITORIA": "Auditoria"
+        },
+        "numero_para_categoria": {
+          "default": "Pagamento"
+        }
+      }
+    },
+    "Daycoval": {
+      "encoding": "latin1",
+      "separator": ";",
+      "skip_rows": 0,
+      "detect_header": true,
+      "columns": {
+        "tipo_detalhe": {
+          "name": "tipo_detalhe",
+          "type": "string"
+        },
+        "tipo_detalhe_numero": {
+          "name": "tipo_detalhe_numero",
+          "type": "string"
+        },
+        "data": {
+          "name": "data",
+          "type": "date"
+        },
+        "codigo_fundo": {
+          "name": "codigo_fundo",
+          "type": "string"
+        },
+        "nome_fundo": {
+          "name": "nome_fundo",
+          "type": "string"
+        },
+        "historico": {
+          "name": "historico",
+          "type": "string"
+        },
+        "debito": {
+          "name": "debito",
+          "type": "decimal"
+        },
+        "credito": {
+          "name": "credito",
+          "type": "decimal"
+        },
+        "saldo": {
+          "name": "saldo",
+          "type": "decimal"
+        },
+        "tipo_conta": {
+          "name": "tipo_conta",
+          "type": "string"
+        },
+        "data_exibicao": {
+          "name": "data_exibicao",
+          "type": "date"
+        },
+        "tipo_movimento": {
+          "name": "tipo_movimento",
+          "type": "string"
+        },
+        "administradora": {
+          "name": "administradora",
+          "type": "string"
+        },
+        "categoria_fundo": {
+          "name": "categoria_fundo",
+          "type": "string"
+        }
+      },
+      "validations": {
+        "drop_if_empty": ["nome_fundo", "data"],
+        "filter_rows_by_value": {
+          "tipo_detalhe": ["P1051Det", "1", "2", "3", "V"]
+        },
+        "filter_out_lancamentos": ["Saldo inicial", "Saldo final"]
+      },
+      "output_mapping": {
+        "DtReferencia": {
+          "source": "data",
+          "format": "%Y-%m-%d %H:%M:%S"
+        },
+        "Ano": {
+          "source": "data",
+          "extract": "year"
+        },
+        "Mês": {
+          "source": "data",
+          "extract": "month_name_pt"
+        },
+        "TpFundo": {
+          "source": "categoria_fundo",
+          "default": "FIDC"
+        },
+        "NmFundo": {
+          "source": "nome_fundo",
+          "extract": "clean_name"
+        },
+        "NmCategorizado": {
+          "source": "nome_fundo"
+        },
+        "Lançamento": {
+          "source": "historico",
+          "extract": "categorize_lancamento_avancado"
+        },
+        "Valor": {
+          "source": ["debito", "credito"],
+          "extract": "max_abs"
+        },
+        "COD": {
+          "source": "codigo_fundo"
+        }
+      },
+      "categorization_rules": {
+        "lancamento": {
+          "Compra Cota": "Compra de Cotas",
+          "Venda Cota": "Venda de Cotas",
+          "Aquisiзгo titulos": "Aquisição de Títulos",
+          "CUSTO_EMISNC": "Custo de Emissão",
+          "Recompra vencidos": "Recompra",
+          "TARIFA": "Tarifa Bancária",
+          "#TARIFA.BANC": "Tarifa Bancária",
+          "DOC/TED": "Transferência",
+          "Transf Entre Contas": "Transferência",
+          "TRANSFERENCIA": "Transferência",
+          "Resgates": "Resgate",
+          "LIQUIDACAO": "Liquidação",
+          "Aplicaзгo": "Aplicação",
+          "Pagamento": "Pagamento",
+          "DC.A.IDENTIF": "Valor a Identificar",
+          "DC.C.RISCO": "Operação de Crédito"
+        },
+        "numero_para_categoria": {
+          "default": "Pagamento"
+        }
+      }
+    },
+    "Singulare": {
+      "encoding": "latin1",
+      "separator": ";",
+      "skip_rows": 6,
+      "columns": {
+        "Data": {
+          "name": "data",
+          "type": "date",
+          "format": "%d/%m/%Y",
+          "required": true
+        },
+        "Histórico": {
+          "name": "lancamento",
+          "type": "string",
+          "required": true
+        },
+        "Entradas": {
+          "name": "valor_credito",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        },
+        "Saídas": {
+          "name": "valor_debito",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        },
+        "Saldo": {
+          "name": "saldo",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        }
+      },
+      "validations": {
+        "drop_if_empty": ["data", "lancamento"],
+        "filter_out_lancamentos": ["Saldo inicial", "Saldo final"]
+      },
+      "output_mapping": {
+        "DtReferencia": {
+          "source": "data",
+          "format": "%Y-%m-%d 00:00:00"
+        },
+        "Ano": {
+          "source": "data",
+          "extract": "year"
+        },
+        "Mês": {
+          "source": "data",
+          "extract": "month_name_pt"
+        },
+        "TpFundo": {
+          "default": "FIDC"
+        },
+        "NmFundo": {
+          "source": "cliente",
+          "default": "Não identificado"
+        },
+        "Lançamento": {
+          "source": "lancamento"
+        },
+        "Valor": {
+          "source": ["valor_credito", "valor_debito"],
+          "extract": "max_abs"
+        }
+      },
+      "categorization_rules": {
+        "lancamento": {
+          "TARIFA DE TED": "Tarifa Bancária",
+          "Resgate do Fundo": "Resgate",
+          "Aplicação no Fundo": "Aplicação",
+          "REEMBOLSO": "Reembolso",
+          "LIQUIDADOS TOTAL": "Liquidação"
+        },
+        "numero_para_categoria": {
+          "default": "Pagamento"
+        }
+      }
+    },
+    "Master": {
+      "encoding": "latin1",
+      "separator": ";",
+      "columns": {
+        "CARTEIRA": {
+          "name": "nome_fundo",
+          "type": "string",
+          "required": true
+        },
+        "DATALANCAMENTO": {
+          "name": "data",
+          "type": "date",
+          "format": "%d/%m/%Y",
+          "required": true
+        },
+        "DATALIQUIDACAO": {
+          "name": "data_liquidacao",
+          "type": "date",
+          "format": "%d/%m/%Y",
+          "required": false
+        },
+        "CODIGOLANCAMENTO": {
+          "name": "codigo_lancamento",
+          "type": "string",
+          "required": false
+        },
+        "HISTORICO": {
+          "name": "lancamento",
+          "type": "string",
+          "required": true
+        },
+        "CREDITO": {
+          "name": "valor_credito",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        },
+        "DEBITO": {
+          "name": "valor_debito",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        },
+        "SALDO": {
+          "name": "saldo",
+          "type": "decimal",
+          "replace": {",": "."},
+          "required": false
+        },
+        "MOEDA": {
+          "name": "moeda",
+          "type": "string",
+          "required": false
+        }
+      },
+      "validations": {
+        "drop_if_empty": ["nome_fundo", "data", "lancamento"],
+        "filter_out_lancamentos": ["Saldo Anterior", "Saldo"]
+      },
+      "output_mapping": {
+        "DtReferencia": {
+          "source": "data",
+          "format": "%Y-%m-%d 00:00:00"
+        },
+        "Ano": {
+          "source": "data",
+          "extract": "year"
+        },
+        "Mês": {
+          "source": "data",
+          "extract": "month_name_pt"
+        },
+        "TpFundo": {
+          "default": "FIDC"
+        },
+        "NmFundo": {
+          "source": "nome_fundo"
+        },
+        "Lançamento": {
+          "source": "lancamento"
+        },
+        "Valor": {
+          "source": ["valor_credito", "valor_debito"],
+          "extract": "max_abs"
+        },
+        "COD": {
+          "source": "codigo_lancamento"
+        }
+      },
+      "categorization_rules": {
+        "lancamento": {
+          "Compra Cota": "Compra de Cotas",
+          "Venda Cota": "Venda de Cotas",
+          "Aplicaзгo no Fundo": "Aplicação",
+          "Resgate do Fundo": "Resgate",
+          "TARIFA": "Tarifa Bancária",
+          "Acerto de saldo": "Ajuste",
+          "Compra com Revenda": "Operação Compromissada",
+          "Vencimento - Juros de RF": "Rendimento",
+          "Vencimento - Amortizaзгo": "Amortização",
+          "Liquida Aplicaзгo": "Liquidação de Aplicação"
+        }
+      }
+    }
+  },
+  "month_translation": {
+    "January": "Janeiro",
+    "February": "Fevereiro",
+    "March": "Março",
+    "April": "Abril",
+    "May": "Maio",
+    "June": "Junho",
+    "July": "Julho",
+    "August": "Agosto",
+    "September": "Setembro",
+    "October": "Outubro",
+    "November": "Novembro",
+    "December": "Dezembro"
+  }
+}
