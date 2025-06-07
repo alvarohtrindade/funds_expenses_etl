@@ -169,9 +169,10 @@ class ExpenseTransformer:
                 "FIC FIM"
             ],
             "FICFIM CP": [
-                "FICFIM CP", 
-                "FIC FIM CP", 
-                "FIC DE FIM CP"
+                "FICFIM CP",
+                "FIC FIM CP",
+                "FIC DE FIM CP",
+                "FC FIM CP"
             ],
             "FIM": [
                 "FIM", 
@@ -252,11 +253,24 @@ class ExpenseTransformer:
             s = unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore').decode('ASCII')
             return s
 
-        # Dicionário de busca usando nomes normalizados do FIC
-        normalized_fic_map = {
-            normalize_string(fic): (fic, fidc)
-            for fic, fidc in fic_to_fidc.items()
-        }
+        # Construir mapa normalizado de FIC -> (FIDC, nome_padrao_FIC)
+        normalized_fic_map: Dict[str, Tuple[str, str]] = {}
+
+        for fidc, fics in fidc_to_fics.items():
+            for fic in fics:
+                normalized_fic_map[normalize_string(fic)] = (fidc, fic)
+
+        for fic, fidc in fic_to_fidc.items():
+            key = normalize_string(fic)
+            standard_name = None
+            if fidc in fidc_to_fics:
+                for fic_padrao in fidc_to_fics[fidc]:
+                    if normalize_string(fic_padrao) in key or key in normalize_string(fic_padrao):
+                        standard_name = fic_padrao
+                        break
+            if standard_name is None:
+                standard_name = fic
+            normalized_fic_map.setdefault(key, (fidc, standard_name))
 
         # Garantir colunas esperadas
         if 'nmfundo' not in df.columns:
@@ -268,21 +282,25 @@ class ExpenseTransformer:
             norm_name = normalize_string(row['nome_fundo'])
 
             fidc_name = None
-            fic_key = None
+            fic_std = None
 
-            # Verificação direta e parcial
+            # Verificação direta
             if norm_name in normalized_fic_map:
-                fic_key, fidc_name = normalized_fic_map[norm_name]
+                fidc_name, fic_std = normalized_fic_map[norm_name]
             else:
-                for fic_norm, (fic_orig, fidc_orig) in normalized_fic_map.items():
+                # Busca por correspondências parciais
+                for fic_norm, (fidc_tmp, fic_tmp) in normalized_fic_map.items():
                     if fic_norm in norm_name or norm_name in fic_norm:
-                        fic_key, fidc_name = fic_orig, fidc_orig
+                        fidc_name, fic_std = fidc_tmp, fic_tmp
                         break
 
             if fidc_name:
                 df.at[idx, 'nmfundo'] = fidc_name
-                df.at[idx, 'nmcategorizado'] = row['nome_fundo']
-                df.at[idx, 'TpFundo'] = self._determine_fic_type(row['nome_fundo'])
+                df.at[idx, 'nmcategorizado'] = normalize_string(fic_std)
+                tp = self._determine_fic_type(row['nome_fundo'])
+                if tp == 'FICFIM CP':
+                    tp = 'FICFIM'
+                df.at[idx, 'TpFundo'] = tp
 
         categorized_count = (df['nmfundo'] != df['nome_fundo']).sum()
         logger.info(f"Fundos categorizados: {categorized_count} mapeamentos aplicados")
@@ -308,38 +326,9 @@ class ExpenseTransformer:
         fic_name = str(fic_name).upper().strip()
         
         # Verificar tipo baseado em palavras-chave no nome
-        if "FIC FIM CP" in fic_name:
+        if "FIC FIM CP" in fic_name or "FC FIM CP" in fic_name:
             return "FICFIM CP"
-        elif "FIC FIM" in fic_name:
-            return "FICFIM"
-        elif "FIC FIA" in fic_name:
-            return "FICFIA"
-        elif "FIC" in fic_name:
-            return "FIC"
-        elif "FIM CP" in fic_name:
-            return "FIM CP"
-        elif "FIM" in fic_name:
-            return "FIM"
-        elif "FIA" in fic_name:
-            return "FIA"
-        
-        # Caso não identifique um padrão específico
-        return "Outro"
-
-    def _determine_fic_type(self, fic_name: str) -> str:
-        """
-        Determina o tipo do FIC com base no nome.
-        """
-        if not fic_name or not isinstance(fic_name, str):
-            return "Outro"
-        
-        # Normalizar nome do fundo
-        fic_name = str(fic_name).upper().strip()
-        
-        # Verificar tipo baseado em palavras-chave no nome
-        if "FIC FIM CP" in fic_name:
-            return "FICFIM CP"
-        elif "FIC FIM" in fic_name:
+        elif "FIC FIM" in fic_name or "FC FIM" in fic_name:
             return "FICFIM"
         elif "FIC FIA" in fic_name:
             return "FICFIA"
